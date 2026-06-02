@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller PMV</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="logo">
+            <div class="logo-icon">🔧</div>
+
+            <div>
+                <h1>Taller Auto</h1>
+                <p>Gestión de taller mecánico</p>
+            </div>
+        </div>
+
+        <div id="header-stats">
+            <span class="stat-chip">0 clientes</span>
+            <span class="stat-chip">0 vehículos</span>
+            <span class="stat-chip">0 órdenes</span>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="clientes">
+             CLIENTES
+        </button>
+
+        <button class="tab-btn" data-tab="vehiculos">
+             VEHÍCULOS
+        </button>
+
+        <button class="tab-btn" data-tab="citas">
+             CITAS
+        </button>
+
+        <button class="tab-btn" data-tab="ordenes">
+             ÓRDENES
+        </button>
+
+        <button class="tab-btn" data-tab="historial">
+             HISTORIAL
+        </button>
+    </nav>
+<div class="loading">
+    Cargando...
+</div>
+    <div id="modal-overlay" class="hidden">
+        <div class="modal">
+
+            <div class="modal-header">
+                <h2 id="modal-title">Título</h2>
+
+                <button id="modal-close" type="button">
+                    ✕
+                </button>
+            </div>
+
+            <div id="modal-body"></div>
+
+        </div>
+    </div>
+    <div id="toast" class="toast hidden"></div>
+    <script src="assets/app.js"></script>
+</body>
+</html>
