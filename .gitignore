@@ -3,3 +3,4 @@ vendor/
 venv/
 *.pyc
 __pycache__/
+alter_db.py
