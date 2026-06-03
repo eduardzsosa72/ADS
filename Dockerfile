@@ -2,20 +2,20 @@ FROM php:8.3-apache
 
 RUN apt-get update && apt-get install -y --no-install-recommends unzip libzip-dev \
     && docker-php-ext-install pdo pdo_mysql zip \
-    && apt-get purge -y libzip-dev \
-    && apt-get autoremove -y --purge \
-    && a2dismod mpm_event mpm_worker 2>/dev/null || true \
-    && a2enmod mpm_prefork \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -f /etc/apache2/mods-enabled/mpm_event.conf \
+              /etc/apache2/mods-enabled/mpm_event.load \
+              /etc/apache2/mods-enabled/mpm_worker.conf \
+              /etc/apache2/mods-enabled/mpm_worker.load \
+    && ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf \
+    && ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load
 
-# Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY . /var/www/html/
 
 RUN composer install --no-dev --no-interaction --working-dir=/var/www/html
 
-# Railway inyecta $PORT; Apache debe escuchar en ese puerto
 RUN echo 'Listen ${PORT}' > /etc/apache2/ports.conf && \
     sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/' /etc/apache2/sites-enabled/000-default.conf
 

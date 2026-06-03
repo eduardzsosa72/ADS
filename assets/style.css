@@ -43,7 +43,7 @@ body{
 .logo-icon{
     width:70px;
     height:70px;
-    background:var(--orange);
+    object-fit:contain;
 
     display:flex;
     align-items:center;
