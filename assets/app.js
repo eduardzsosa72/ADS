@@ -64,6 +64,8 @@ async function doRegistro() {
   const fd = new FormData();
   fd.append('username', document.getElementById('reg-user').value.trim());
   fd.append('password', document.getElementById('reg-pass').value);
+  fd.append('telefono', document.getElementById('reg-tel').value.trim());
+  fd.append('correo', document.getElementById('reg-correo').value.trim());
 
   const r = await fetch('auth/registro.php', { method: 'POST', body: fd }).then(r => r.json());
 
@@ -241,7 +243,7 @@ function renderClientes() {
         </div>
       </div>
       <div class="card-footer">
-        <button class="btn-card edit" onclick="editCliente(${c.id})">${SVG.edit} Editar</button>
+        ${isAdmin() ? `<button class="btn-card edit" onclick="editCliente(${c.id})">${SVG.edit} Editar</button>` : ''}
         ${btnDel(`deleteCliente(${c.id})`)}
       </div>
     </div>`).join('') : emptyState('No hay clientes registrados');
@@ -453,7 +455,7 @@ function renderOrdenes() {
         </div>
       </div>
       <div class="card-footer">
-        <button class="btn-card estado" onclick="cambiarEstado(${o.id},'${o.estado}')">${SVG.bolt} Estado</button>
+        ${isAdmin() ? `<button class="btn-card estado" onclick="cambiarEstado(${o.id},'${o.estado}')">${SVG.bolt} Estado</button>` : ''}
         ${btnDel(`deleteOrden(${o.id})`)}
       </div>
     </div>`).join('') : emptyState('No hay órdenes registradas');

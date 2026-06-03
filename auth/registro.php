@@ -22,6 +22,10 @@ if ($stmt->fetch()) {
 $hash = password_hash($password, PASSWORD_DEFAULT);
 $conn->prepare("INSERT INTO usuarios (username, password, rol) VALUES (?, ?, 'usuario')")->execute([$username, $hash]);
 
-$id = $conn->lastInsertId();
+$id       = $conn->lastInsertId();
+$telefono = trim($_POST['telefono'] ?? '');
+$correo   = trim($_POST['correo'] ?? '');
+$conn->prepare("INSERT INTO clientes (nombre, telefono, correo) VALUES (?, ?, ?)")->execute([$username, $telefono, $correo]);
+
 $_SESSION['usuario'] = ['id' => $id, 'username' => $username, 'rol' => 'usuario'];
 echo json_encode(['ok' => true, 'username' => $username, 'rol' => 'usuario']);

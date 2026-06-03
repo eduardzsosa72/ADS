@@ -1,6 +1,9 @@
 <?php
 header('Content-Type: application/json');
 require_once '../config/db.php';
+require_once '../config/auth.php';
+
+requireAdmin();
 
 $id       = intval($_POST['id'] ?? 0);
 $nombre   = trim($_POST['nombre'] ?? '');

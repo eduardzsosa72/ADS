@@ -1,8 +1,16 @@
 <?php
 header('Content-Type: application/json');
 require_once '../config/db.php';
+require_once '../config/auth.php';
+
+requireLogin();
 
 $id          = intval($_POST['id'] ?? 0);
+
+if ($id > 0 && ($_SESSION['usuario']['rol'] ?? '') !== 'admin') {
+    echo json_encode(['error' => 'Solo el admin puede editar']);
+    exit;
+}
 $cliente_id  = intval($_POST['cliente_id'] ?? 0);
 $vehiculo_id = intval($_POST['vehiculo_id'] ?? 0);
 $fecha       = trim($_POST['fecha'] ?? '');

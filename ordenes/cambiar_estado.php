@@ -1,6 +1,12 @@
 <?php
 header('Content-Type: application/json');
 require_once '../config/db.php';
+require_once '../config/auth.php';
+
+if (($_SESSION['usuario']['rol'] ?? '') !== 'admin') {
+    echo json_encode(['error' => 'Sin permisos']);
+    exit;
+}
 
 $id     = intval($_POST['id'] ?? 0);
 $estado = trim($_POST['estado'] ?? '');
