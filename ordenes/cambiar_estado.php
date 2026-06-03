@@ -6,14 +6,20 @@ $id     = intval($_POST['id'] ?? 0);
 $estado = trim($_POST['estado'] ?? '');
 
 $validos = ['pendiente', 'en_proceso', 'finalizado'];
+
 if (!$id || !in_array($estado, $validos)) {
-    echo json_encode(['error' => 'Datos inválidos']); exit;
+    echo json_encode(['error' => 'Datos inválidos']);
+    exit;
 }
 
 $conn = getConn();
-$stmt = $conn->prepare("UPDATE ordenes SET estado=? WHERE id=?");
-$stmt->bind_param('si', $estado, $id);
-$stmt->execute();
-echo json_encode(['ok' => true]);
-$stmt->close();
-$conn->close();
+
+try {
+    $stmt = $conn->prepare("UPDATE ordenes SET estado = ? WHERE id = ?");
+    $stmt->execute([$estado, $id]);
+
+    echo json_encode(['ok' => true]);
+
+} catch (Exception $e) {
+    echo json_encode(['error' => $e->getMessage()]);
+}

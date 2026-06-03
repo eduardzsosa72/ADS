@@ -1,44 +1,48 @@
 <?php
 header('Content-Type: application/json');
+
 require_once '../config/db.php';
-
-$placa = strtoupper(trim($_GET['placa'] ?? ''));
-if (!$placa) { echo json_encode(['error' => 'Ingresa una placa']); exit; }
-
 $conn = getConn();
 
-// Find vehicle
-$stmt = $conn->prepare("SELECT * FROM vehiculos WHERE placa=?");
-$stmt->bind_param('s', $placa);
-$stmt->execute();
-$res = $stmt->get_result();
-$vehiculo = $res->fetch_assoc();
-$stmt->close();
+$placa = strtoupper(trim($_GET['placa'] ?? ''));
 
-if (!$vehiculo) {
-    echo json_encode(['error' => "No se encontró ningún vehículo con placa \"$placa\""]);
-    $conn->close(); exit;
+if (!$placa) {
+    echo json_encode(['error' => 'Ingresa una placa']);
+    exit;
 }
 
-// Find owner
-$stmt = $conn->prepare("SELECT * FROM clientes WHERE id=?");
-$stmt->bind_param('i', $vehiculo['cliente_id']);
-$stmt->execute();
-$cliente = $stmt->get_result()->fetch_assoc();
-$stmt->close();
+try {
 
-// Find orders
-$stmt = $conn->prepare("SELECT * FROM ordenes WHERE vehiculo_id=? ORDER BY id DESC");
-$stmt->bind_param('i', $vehiculo['id']);
-$stmt->execute();
-$res = $stmt->get_result();
-$ordenes = [];
-while ($row = $res->fetch_assoc()) $ordenes[] = $row;
-$stmt->close();
-$conn->close();
+    //  Buscar vehículo
+    $stmt = $conn->prepare("SELECT * FROM vehiculos WHERE placa = ?");
+    $stmt->execute([$placa]);
+    $vehiculo = $stmt->fetch(PDO::FETCH_ASSOC);
 
-echo json_encode([
-    'vehiculo' => $vehiculo,
-    'cliente'  => $cliente,
-    'ordenes'  => $ordenes,
-]);
+    if (!$vehiculo) {
+        echo json_encode(['error' => "No se encontró ningún vehículo con placa \"$placa\""]);
+        exit;
+    }
+
+    //  Buscar cliente
+    $stmt = $conn->prepare("SELECT * FROM clientes WHERE id = ?");
+    $stmt->execute([$vehiculo['cliente_id']]);
+    $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    //  Buscar órdenes
+    $stmt = $conn->prepare("SELECT * FROM ordenes WHERE vehiculo_id = ? ORDER BY id DESC");
+    $stmt->execute([$vehiculo['id']]);
+    $ordenes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //  Respuesta final
+    echo json_encode([
+        'vehiculo' => $vehiculo,
+        'cliente'  => $cliente,
+        'ordenes'  => $ordenes,
+    ]);
+
+} catch (Exception $e) {
+    echo json_encode([
+        'error' => 'Error en consulta',
+        'detalle' => $e->getMessage()
+    ]);
+}

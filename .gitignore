@@ -1,2 +1,5 @@
-/vendor/
+vendor/
 .env
+venv/
+*.pyc
+__pycache__/

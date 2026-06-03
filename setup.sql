@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS ordenes (
     vehiculo_id     INT NOT NULL,
     descripcion     TEXT        NOT NULL,
     estado          ENUM('pendiente','en_proceso','finalizado') DEFAULT 'pendiente',
-    observaciones   TEXT        DEFAULT '',
+    observaciones TEXT NULL,
     fecha_creacion  VARCHAR(12) DEFAULT '',
     FOREIGN KEY (cliente_id)  REFERENCES clientes(id)  ON DELETE CASCADE,
     FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id) ON DELETE CASCADE

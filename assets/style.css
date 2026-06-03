@@ -263,3 +263,57 @@ body{
 .loading{
     padding:40px;
 }
+
+.grid-clientes{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.cliente-card{
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cliente-info{
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.avatar{
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #ff7a00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+}
+
+.nombre{
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.subinfo{
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.acciones button{
+  margin-left: 5px;
+}
+
+.acciones .danger{
+  background: red;
+  color: white;
+}

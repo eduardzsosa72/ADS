@@ -9,19 +9,33 @@ $fecha       = trim($_POST['fecha'] ?? '');
 $hora        = trim($_POST['hora'] ?? '');
 $motivo      = trim($_POST['motivo'] ?? '');
 
-if (!$fecha || !$hora || !$motivo) { echo json_encode(['error' => 'Fecha, hora y motivo son requeridos']); exit; }
+if (!$fecha || !$hora || !$motivo) {
+    echo json_encode(['error' => 'Fecha, hora y motivo son requeridos']);
+    exit;
+}
 
 $conn = getConn();
 
-if ($id > 0) {
-    $stmt = $conn->prepare("UPDATE citas SET cliente_id=?, vehiculo_id=?, fecha=?, hora=?, motivo=? WHERE id=?");
-    $stmt->bind_param('iisssi', $cliente_id, $vehiculo_id, $fecha, $hora, $motivo, $id);
-} else {
-    $stmt = $conn->prepare("INSERT INTO citas (cliente_id, vehiculo_id, fecha, hora, motivo) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param('iisss', $cliente_id, $vehiculo_id, $fecha, $hora, $motivo);
-}
+try {
 
-$stmt->execute();
-echo json_encode(['ok' => true]);
-$stmt->close();
-$conn->close();
+    if ($id > 0) {
+        $stmt = $conn->prepare("
+            UPDATE citas 
+            SET cliente_id = ?, vehiculo_id = ?, fecha = ?, hora = ?, motivo = ?
+            WHERE id = ?
+        ");
+        $stmt->execute([$cliente_id, $vehiculo_id, $fecha, $hora, $motivo, $id]);
+
+    } else {
+        $stmt = $conn->prepare("
+            INSERT INTO citas (cliente_id, vehiculo_id, fecha, hora, motivo)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([$cliente_id, $vehiculo_id, $fecha, $hora, $motivo]);
+    }
+
+    echo json_encode(['ok' => true]);
+
+} catch (Exception $e) {
+    echo json_encode(['error' => $e->getMessage()]);
+}

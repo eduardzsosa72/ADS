@@ -7,19 +7,33 @@ $nombre   = trim($_POST['nombre'] ?? '');
 $telefono = trim($_POST['telefono'] ?? '');
 $correo   = trim($_POST['correo'] ?? '');
 
-if (!$nombre) { echo json_encode(['error' => 'El nombre es requerido']); exit; }
+if (!$nombre) {
+    echo json_encode(['error' => 'El nombre es requerido']);
+    exit;
+}
 
 $conn = getConn();
 
-if ($id > 0) {
-    $stmt = $conn->prepare("UPDATE clientes SET nombre=?, telefono=?, correo=? WHERE id=?");
-    $stmt->bind_param('sssi', $nombre, $telefono, $correo, $id);
-} else {
-    $stmt = $conn->prepare("INSERT INTO clientes (nombre, telefono, correo) VALUES (?, ?, ?)");
-    $stmt->bind_param('sss', $nombre, $telefono, $correo);
-}
+try {
 
-$stmt->execute();
-echo json_encode(['ok' => true]);
-$stmt->close();
-$conn->close();
+    if ($id > 0) {
+        $stmt = $conn->prepare("
+            UPDATE clientes 
+            SET nombre = ?, telefono = ?, correo = ?
+            WHERE id = ?
+        ");
+        $stmt->execute([$nombre, $telefono, $correo, $id]);
+
+    } else {
+        $stmt = $conn->prepare("
+            INSERT INTO clientes (nombre, telefono, correo)
+            VALUES (?, ?, ?)
+        ");
+        $stmt->execute([$nombre, $telefono, $correo]);
+    }
+
+    echo json_encode(['ok' => true]);
+
+} catch (Exception $e) {
+    echo json_encode(['error' => $e->getMessage()]);
+}
