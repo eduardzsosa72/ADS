@@ -1,14 +1,105 @@
-/* ───────────── TALLER PMV FULL FIX ───────────── */
+/* ───────────── TALLER PMV ───────────── */
 
 let state = {
   clientes: [],
   vehiculos: [],
   citas: [],
   ordenes: [],
-  historial: null
+  usuario: null   // { username, rol }
 };
 
 let currentTab = 'clientes';
+
+// ───────────── AUTH ─────────────
+async function checkSession() {
+  const r = await fetch('auth/me.php').then(r => r.json());
+  if (r.ok) {
+    state.usuario = { username: r.username, rol: r.rol };
+    showApp();
+  } else {
+    showLogin();
+  }
+}
+
+function showLogin() {
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').classList.add('hidden');
+}
+
+function showApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-badge').innerHTML =
+    `<span class="badge-rol ${state.usuario.rol}">${state.usuario.rol}</span> ${esc(state.usuario.username)}`;
+  init();
+}
+
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('username', document.getElementById('login-user').value.trim());
+  fd.append('password', document.getElementById('login-pass').value);
+
+  const r = await fetch('auth/login.php', { method: 'POST', body: fd }).then(r => r.json());
+
+  if (r.ok) {
+    state.usuario = { username: r.username, rol: r.rol };
+    errEl.classList.add('hidden');
+    showApp();
+  } else {
+    errEl.textContent = r.error || 'Error al iniciar sesión';
+    errEl.classList.remove('hidden');
+    btn.disabled = false;
+  }
+}
+
+async function doRegistro() {
+  const btn = document.getElementById('reg-btn');
+  const errEl = document.getElementById('login-error');
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('username', document.getElementById('reg-user').value.trim());
+  fd.append('password', document.getElementById('reg-pass').value);
+
+  const r = await fetch('auth/registro.php', { method: 'POST', body: fd }).then(r => r.json());
+
+  if (r.ok) {
+    state.usuario = { username: r.username, rol: r.rol };
+    errEl.classList.add('hidden');
+    showApp();
+  } else {
+    errEl.textContent = r.error || 'Error al registrarse';
+    errEl.classList.remove('hidden');
+    btn.disabled = false;
+  }
+}
+
+async function doLogout() {
+  await fetch('auth/logout.php', { method: 'POST' });
+  state.usuario = null;
+  showLogin();
+}
+
+function toggleAuth(mode) {
+  document.getElementById('form-login').classList.toggle('hidden', mode !== 'login');
+  document.getElementById('form-registro').classList.toggle('hidden', mode !== 'registro');
+  document.getElementById('login-error').classList.add('hidden');
+}
+
+// Permitir login/registro con Enter
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement?.id === 'reg-pass') doRegistro();
+});
+
+// ───────────── HELPER: ¿es admin? ─────────────
+function isAdmin() { return state.usuario?.rol === 'admin'; }
 
 // ───────────── API ─────────────
 async function api(url) {
@@ -19,12 +110,7 @@ async function api(url) {
 async function post(url, data) {
   const fd = new FormData();
   Object.keys(data).forEach(k => fd.append(k, data[k]));
-
-  const res = await fetch(url, {
-    method: 'POST',
-    body: fd
-  });
-
+  const res = await fetch(url, { method: 'POST', body: fd });
   return res.json();
 }
 
@@ -36,7 +122,6 @@ async function loadAll() {
     api('citas/index.php'),
     api('ordenes/index.php')
   ]);
-
   state.clientes = clientes;
   state.vehiculos = vehiculos;
   state.citas = citas;
@@ -50,7 +135,7 @@ async function init() {
   renderTab('clientes');
 }
 
-init();
+checkSession();
 
 // ───────────── HEADER ─────────────
 function updateHeaderStats() {
@@ -66,7 +151,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
     currentTab = btn.dataset.tab;
     renderTab(currentTab);
   });
@@ -75,22 +159,18 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 function renderTab(tab) {
   const el = document.getElementById('tab-content');
   el.innerHTML = `<div class="loading">Cargando...</div>`;
-
   switch (tab) {
-    case 'clientes': renderClientes(); break;
+    case 'clientes':  renderClientes();  break;
     case 'vehiculos': renderVehiculos(); break;
-    case 'citas': renderCitas(); break;
-    case 'ordenes': renderOrdenes(); break;
+    case 'citas':     renderCitas();     break;
+    case 'ordenes':   renderOrdenes();   break;
     case 'historial': renderHistorial(); break;
   }
 }
 
 // ───────────── HELPERS ─────────────
 const esc = s => (s || '').replace(/</g, "&lt;");
-
-function val(id) {
-  return document.getElementById(id).value;
-}
+function val(id) { return document.getElementById(id).value; }
 
 function openModal(title, body) {
   document.getElementById('modal-title').innerText = title;
@@ -111,7 +191,13 @@ function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.remove('hidden');
-  setTimeout(() => t.classList.add('hidden'), 2000);
+  setTimeout(() => t.classList.add('hidden'), 2500);
+}
+
+function btnEliminar(onclick) {
+  return isAdmin()
+    ? `<button onclick="${onclick}" class="danger">Eliminar</button>`
+    : '';
 }
 
 // ───────────── CLIENTES ─────────────
@@ -124,41 +210,31 @@ function renderClientes() {
       </div>
       <button onclick="openCliente()">+ Nuevo cliente</button>
     </div>
-
     <div class="grid-clientes">
   `;
 
-  if (!state.clientes.length) {
-    html += `<div class="empty">No hay clientes registrados</div>`;
-  }
+  if (!state.clientes.length) html += `<div class="empty">No hay clientes registrados</div>`;
 
   state.clientes.forEach(c => {
     html += `
       <div class="cliente-card">
-        
         <div class="cliente-info">
-          <div class="avatar">
-            ${c.nombre.charAt(0).toUpperCase()}
-          </div>
-
+          <div class="avatar">${c.nombre.charAt(0).toUpperCase()}</div>
           <div>
             <div class="nombre">${esc(c.nombre)}</div>
             <div class="subinfo">📞 ${esc(c.telefono)}</div>
             <div class="subinfo">✉ ${esc(c.correo)}</div>
           </div>
         </div>
-
         <div class="acciones">
           <button onclick="editCliente(${c.id})">Editar</button>
-          <button onclick="deleteCliente(${c.id})" class="danger">Eliminar</button>
+          ${btnEliminar(`deleteCliente(${c.id})`)}
         </div>
-
       </div>
     `;
   });
 
   html += `</div>`;
-
   document.getElementById('tab-content').innerHTML = html;
 }
 
@@ -185,21 +261,14 @@ async function saveCliente() {
     telefono: val('telefono'),
     correo: val('correo')
   });
-
-  if (r.ok) {
-    closeModal();
-    await loadAll();
-    renderTab('clientes');
-    toast('Cliente guardado');
-  } else {
-    toast(r.error || 'Error al guardar');
-  }
+  if (r.ok) { closeModal(); await loadAll(); renderTab('clientes'); toast('Cliente guardado'); }
+  else toast(r.error || 'Error al guardar');
 }
 
 async function deleteCliente(id) {
-  await post('clientes/eliminar.php', { id });
-  await loadAll();
-  renderTab('clientes');
+  const r = await post('clientes/eliminar.php', { id });
+  if (r.ok) { await loadAll(); renderTab('clientes'); toast('Cliente eliminado'); }
+  else toast(r.error || 'Sin permisos');
 }
 
 // ───────────── VEHÍCULOS ─────────────
@@ -211,15 +280,21 @@ function renderVehiculos() {
     </div>
   `;
 
-  if (!state.vehiculos.length) {
-    html += `<div class="empty">No hay vehículos registrados</div>`;
-  }
+  if (!state.vehiculos.length) html += `<div class="empty">No hay vehículos registrados</div>`;
 
   state.vehiculos.forEach(v => {
     html += `
-      <div>
-        ${esc(v.marca)} ${esc(v.modelo)} - ${esc(v.placa)}
-        <button onclick="deleteVehiculo(${v.id})">Eliminar</button>
+      <div class="cliente-card">
+        <div class="cliente-info">
+          <div class="avatar">🚗</div>
+          <div>
+            <div class="nombre">${esc(v.marca)} ${esc(v.modelo)}</div>
+            <div class="subinfo">Placa: ${esc(v.placa)}</div>
+          </div>
+        </div>
+        <div class="acciones">
+          ${btnEliminar(`deleteVehiculo(${v.id})`)}
+        </div>
       </div>
     `;
   });
@@ -245,21 +320,14 @@ async function saveVehiculo() {
     modelo: val('v_modelo'),
     placa: val('v_placa')
   });
-
-  if (r.ok) {
-    closeModal();
-    await loadAll();
-    renderTab('vehiculos');
-    toast('Vehículo guardado');
-  } else {
-    toast(r.error || 'Error al guardar');
-  }
+  if (r.ok) { closeModal(); await loadAll(); renderTab('vehiculos'); toast('Vehículo guardado'); }
+  else toast(r.error || 'Error al guardar');
 }
 
 async function deleteVehiculo(id) {
-  await post('vehiculos/eliminar.php', { id });
-  await loadAll();
-  renderTab('vehiculos');
+  const r = await post('vehiculos/eliminar.php', { id });
+  if (r.ok) { await loadAll(); renderTab('vehiculos'); toast('Vehículo eliminado'); }
+  else toast(r.error || 'Sin permisos');
 }
 
 // ───────────── CITAS ─────────────
@@ -271,15 +339,21 @@ function renderCitas() {
     </div>
   `;
 
-  if (!state.citas.length) {
-    html += `<div class="empty">No hay citas registradas</div>`;
-  }
+  if (!state.citas.length) html += `<div class="empty">No hay citas registradas</div>`;
 
   state.citas.forEach(c => {
     html += `
-      <div>
-        ${esc(c.fecha)} ${esc(c.hora)} - ${esc(c.motivo)}
-        <button onclick="deleteCita(${c.id})">Eliminar</button>
+      <div class="cliente-card">
+        <div class="cliente-info">
+          <div class="avatar">📅</div>
+          <div>
+            <div class="nombre">${esc(c.fecha)} ${esc(c.hora)}</div>
+            <div class="subinfo">${esc(c.motivo)}</div>
+          </div>
+        </div>
+        <div class="acciones">
+          ${btnEliminar(`deleteCita(${c.id})`)}
+        </div>
       </div>
     `;
   });
@@ -308,21 +382,14 @@ async function saveCita() {
     hora: val('c_hora'),
     motivo: val('c_motivo')
   });
-
-  if (r.ok) {
-    closeModal();
-    await loadAll();
-    renderTab('citas');
-    toast('Cita guardada');
-  } else {
-    toast(r.error || 'Error al guardar');
-  }
+  if (r.ok) { closeModal(); await loadAll(); renderTab('citas'); toast('Cita guardada'); }
+  else toast(r.error || 'Error al guardar');
 }
 
 async function deleteCita(id) {
-  await post('citas/eliminar.php', { id });
-  await loadAll();
-  renderTab('citas');
+  const r = await post('citas/eliminar.php', { id });
+  if (r.ok) { await loadAll(); renderTab('citas'); toast('Cita eliminada'); }
+  else toast(r.error || 'Sin permisos');
 }
 
 // ───────────── ÓRDENES ─────────────
@@ -334,15 +401,21 @@ function renderOrdenes() {
     </div>
   `;
 
-  if (!state.ordenes.length) {
-    html += `<div class="empty">No hay órdenes registradas</div>`;
-  }
+  if (!state.ordenes.length) html += `<div class="empty">No hay órdenes registradas</div>`;
 
   state.ordenes.forEach(o => {
     html += `
-      <div>
-        ${esc(o.descripcion)} - ${esc(o.estado)}
-        <button onclick="deleteOrden(${o.id})">Eliminar</button>
+      <div class="cliente-card">
+        <div class="cliente-info">
+          <div class="avatar">🔧</div>
+          <div>
+            <div class="nombre">${esc(o.descripcion)}</div>
+            <div class="subinfo">Estado: <em>${esc(o.estado)}</em></div>
+          </div>
+        </div>
+        <div class="acciones">
+          ${btnEliminar(`deleteOrden(${o.id})`)}
+        </div>
       </div>
     `;
   });
@@ -373,28 +446,19 @@ async function saveOrden() {
     descripcion: val('o_descripcion'),
     estado: val('o_estado')
   });
-
-  if (r.ok) {
-    closeModal();
-    await loadAll();
-    renderTab('ordenes');
-    toast('Orden guardada');
-  } else {
-    toast(r.error || 'Error al guardar');
-  }
+  if (r.ok) { closeModal(); await loadAll(); renderTab('ordenes'); toast('Orden guardada'); }
+  else toast(r.error || 'Error al guardar');
 }
 
 async function deleteOrden(id) {
-  await post('ordenes/eliminar.php', { id });
-  await loadAll();
-  renderTab('ordenes');
+  const r = await post('ordenes/eliminar.php', { id });
+  if (r.ok) { await loadAll(); renderTab('ordenes'); toast('Orden eliminada'); }
+  else toast(r.error || 'Sin permisos');
 }
 
 // ───────────── HISTORIAL ─────────────
 async function renderHistorial() {
-  const el = document.getElementById('tab-content');
-
-  el.innerHTML = `
+  document.getElementById('tab-content').innerHTML = `
     <div class="section-header">
       <h2>Historial por placa</h2>
     </div>
@@ -413,26 +477,19 @@ async function buscarHistorial() {
   const res = await api(`historial/index.php?placa=${encodeURIComponent(placa)}`);
   const el = document.getElementById('historial-result');
 
-  if (res.error) {
-    el.innerHTML = `<div class="empty">${esc(res.error)}</div>`;
-    return;
-  }
+  if (res.error) { el.innerHTML = `<div class="empty">${esc(res.error)}</div>`; return; }
 
   const { vehiculo, cliente, ordenes } = res;
-
   let html = `
     <p><strong>Vehículo:</strong> ${esc(vehiculo.marca)} ${esc(vehiculo.modelo)} — ${esc(vehiculo.placa)}</p>
     <p><strong>Cliente:</strong> ${esc(cliente ? cliente.nombre : 'N/A')}</p>
     <h3 style="margin-top:15px">Órdenes (${ordenes.length})</h3>
   `;
 
-  if (!ordenes.length) {
-    html += `<div class="empty">Sin órdenes registradas</div>`;
-  } else {
-    ordenes.forEach(o => {
-      html += `<div>${esc(o.descripcion)} — <em>${esc(o.estado)}</em></div>`;
-    });
-  }
+  if (!ordenes.length) html += `<div class="empty">Sin órdenes registradas</div>`;
+  else ordenes.forEach(o => {
+    html += `<div>${esc(o.descripcion)} — <em>${esc(o.estado)}</em></div>`;
+  });
 
   el.innerHTML = html;
 }

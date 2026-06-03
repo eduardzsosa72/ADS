@@ -4,49 +4,82 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Taller PMV</title>
-
   <link rel="stylesheet" href="assets/style.css">
 </head>
 
 <body>
 
-<header class="topbar">
-  <div class="logo">
-    <img src="logo.png" alt="Logo" class="logo-icon">
-    <div>
-      <h1>AutoFlix SV</h1>
-      <p>Gestión de taller mecánico</p>
+<!-- ── PANTALLA DE LOGIN / REGISTRO ── -->
+<div id="login-screen" class="login-screen hidden">
+  <div class="login-box">
+    <img src="logo.png" alt="Logo" class="login-logo">
+    <h2>AutoFlix SV</h2>
+
+    <!-- LOGIN -->
+    <div id="form-login">
+      <p class="login-sub">Ingresa tus credenciales</p>
+      <input id="login-user" type="text" placeholder="Usuario" autocomplete="username">
+      <input id="login-pass" type="password" placeholder="Contraseña" autocomplete="current-password">
+      <button id="login-btn" onclick="doLogin()">Ingresar</button>
+      <p class="login-toggle">¿No tienes cuenta? <a href="#" onclick="toggleAuth('registro')">Regístrate</a></p>
     </div>
+
+    <!-- REGISTRO -->
+    <div id="form-registro" class="hidden">
+      <p class="login-sub">Crear cuenta nueva</p>
+      <input id="reg-user" type="text" placeholder="Usuario" autocomplete="username">
+      <input id="reg-pass" type="password" placeholder="Contraseña (mín. 6)" autocomplete="new-password">
+      <button id="reg-btn" onclick="doRegistro()">Crear cuenta</button>
+      <p class="login-toggle">¿Ya tienes cuenta? <a href="#" onclick="toggleAuth('login')">Inicia sesión</a></p>
+    </div>
+
+    <p id="login-error" class="login-error hidden"></p>
   </div>
+</div>
 
-  <div id="header-stats">
-    <span class="stat-chip">0 clientes</span>
-    <span class="stat-chip">0 vehículos</span>
-    <span class="stat-chip">0 órdenes</span>
-  </div>
-</header>
+<!-- ── APP PRINCIPAL ── -->
+<div id="app" class="hidden">
 
-<nav class="tabs">
-  <button class="tab-btn active" data-tab="clientes">CLIENTES</button>
-  <button class="tab-btn" data-tab="vehiculos">VEHÍCULOS</button>
-  <button class="tab-btn" data-tab="citas">CITAS</button>
-  <button class="tab-btn" data-tab="ordenes">ÓRDENES</button>
-  <button class="tab-btn" data-tab="historial">HISTORIAL</button>
-</nav>
+  <header class="topbar">
+    <div class="logo">
+      <img src="logo.png" alt="Logo" class="logo-icon">
+      <div>
+        <h1>AutoFlix SV</h1>
+        <p>Gestión de taller mecánico</p>
+      </div>
+    </div>
 
-<!-- CONTENIDO DINÁMICO -->
-<main id="tab-content"></main>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="header-stats">
+        <span class="stat-chip">0 clientes</span>
+        <span class="stat-chip">0 vehículos</span>
+        <span class="stat-chip">0 órdenes</span>
+      </div>
+      <div id="user-badge" class="user-badge"></div>
+      <button id="logout-btn" class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="clientes">CLIENTES</button>
+    <button class="tab-btn" data-tab="vehiculos">VEHÍCULOS</button>
+    <button class="tab-btn" data-tab="citas">CITAS</button>
+    <button class="tab-btn" data-tab="ordenes">ÓRDENES</button>
+    <button class="tab-btn" data-tab="historial">HISTORIAL</button>
+  </nav>
+
+  <main id="tab-content"></main>
+
+</div>
+
 <!-- MODAL -->
 <div id="modal-overlay" class="hidden">
   <div class="modal">
-
     <div class="modal-header">
       <h2 id="modal-title"></h2>
       <button id="modal-close" type="button">✕</button>
     </div>
-
     <div id="modal-body"></div>
-
   </div>
 </div>
 

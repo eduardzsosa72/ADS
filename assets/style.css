@@ -317,3 +317,143 @@ body{
   background: red;
   color: white;
 }
+
+/* =====================
+   LOGIN
+===================== */
+
+.login-screen{
+    position:fixed;
+    inset:0;
+    background:var(--bg);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+
+.login-box{
+    width:360px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:40px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    align-items:center;
+    text-align:center;
+}
+
+.login-logo{
+    width:70px;
+    height:70px;
+    object-fit:contain;
+    margin-bottom:8px;
+}
+
+.login-sub{
+    color:var(--muted);
+    font-size:14px;
+    margin-top:-8px;
+}
+
+.login-box input{
+    width:100%;
+    padding:12px 14px;
+    background:#0d1b2a;
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:white;
+    font-size:15px;
+}
+
+.login-box input:focus{
+    outline:none;
+    border-color:var(--orange);
+}
+
+.login-box button{
+    width:100%;
+    padding:12px;
+    background:var(--orange);
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    letter-spacing:1px;
+}
+
+.login-box button:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
+
+.login-error{
+    color:#ef4444;
+    font-size:13px;
+    width:100%;
+}
+
+.login-toggle{
+    font-size:13px;
+    color:var(--muted);
+    width:100%;
+}
+
+.login-toggle a{
+    color:var(--orange);
+    text-decoration:none;
+}
+
+.login-toggle a:hover{
+    text-decoration:underline;
+}
+
+/* =====================
+   BADGE USUARIO / LOGOUT
+===================== */
+
+.user-badge{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    color:var(--muted);
+}
+
+.badge-rol{
+    font-size:11px;
+    font-weight:700;
+    padding:3px 8px;
+    border-radius:20px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+}
+
+.badge-rol.admin{
+    background:var(--orange);
+    color:white;
+}
+
+.badge-rol.usuario{
+    background:#263042;
+    color:#aab;
+}
+
+.btn-logout{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-size:13px;
+}
+
+.btn-logout:hover{
+    border-color:#ef4444;
+    color:#ef4444;
+}

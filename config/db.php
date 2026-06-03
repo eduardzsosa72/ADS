@@ -9,12 +9,12 @@ function getConn() {
     static $conn = null;
     if ($conn === null) {
         $conn = new PDO(
-            "mysql:host=" . getenv('DB_HOST') .
-            ";port=" . getenv('DB_PORT') .
-            ";dbname=" . getenv('DB_NAME') .
+            "mysql:host=" . ($_ENV['DB_HOST'] ?? getenv('DB_HOST')) .
+            ";port=" . ($_ENV['DB_PORT'] ?? getenv('DB_PORT')) .
+            ";dbname=" . ($_ENV['DB_NAME'] ?? getenv('DB_NAME')) .
             ";charset=utf8mb4",
-            getenv('DB_USER'),
-            getenv('DB_PASS')
+            $_ENV['DB_USER'] ?? getenv('DB_USER'),
+            $_ENV['DB_PASS'] ?? getenv('DB_PASS')
         );
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }

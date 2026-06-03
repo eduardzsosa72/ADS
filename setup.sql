@@ -42,3 +42,14 @@ CREATE TABLE IF NOT EXISTS ordenes (
     FOREIGN KEY (cliente_id)  REFERENCES clientes(id)  ON DELETE CASCADE,
     FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    id       INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(60)  NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    rol      ENUM('admin','usuario') DEFAULT 'usuario'
+);
+
+-- Usuario admin por defecto: admin / admin123
+INSERT IGNORE INTO usuarios (username, password, rol)
+VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
