@@ -1,20 +1,21 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
+
+if (file_exists(dirname(__DIR__) . '/.env')) {
+    Dotenv\Dotenv::createImmutable(dirname(__DIR__))->load();
+}
+
 function getConn() {
     static $conn = null;
-
     if ($conn === null) {
         $conn = new PDO(
-            "mysql:host=" . $_ENV['DB_HOST'] .
-            ";port=" . $_ENV['DB_PORT'] .
-            ";dbname=" . $_ENV['DB_NAME'] .
+            "mysql:host=" . getenv('DB_HOST') .
+            ";port=" . getenv('DB_PORT') .
+            ";dbname=" . getenv('DB_NAME') .
             ";charset=utf8mb4",
-            $_ENV['DB_USER'],
-            $_ENV['DB_PASS']
+            getenv('DB_USER'),
+            getenv('DB_PASS')
         );
-
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
     return $conn;
