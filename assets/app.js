@@ -5,8 +5,7 @@ let state = {
   vehiculos: [],
   citas: [],
   ordenes: [],
-  usuario: null,
-  csrfToken: ''
+  usuario: null
 };
 
 let currentTab = 'clientes';
@@ -16,7 +15,6 @@ async function checkSession() {
   const r = await fetch('auth/me.php').then(r => r.json());
   if (r.ok) {
     state.usuario = { username: r.username, rol: r.rol };
-    state.csrfToken = r.csrf_token || '';
     showApp();
   } else {
     showLogin();
@@ -49,7 +47,6 @@ async function doLogin() {
 
   if (r.ok) {
     state.usuario = { username: r.username, rol: r.rol };
-    state.csrfToken = r.csrf_token || '';
     errEl.classList.add('hidden');
     showApp();
   } else {
@@ -74,7 +71,6 @@ async function doRegistro() {
 
   if (r.ok) {
     state.usuario = { username: r.username, rol: r.rol };
-    state.csrfToken = r.csrf_token || '';
     errEl.classList.add('hidden');
     showApp();
   } else {
@@ -87,7 +83,6 @@ async function doRegistro() {
 async function doLogout() {
   await fetch('auth/logout.php', { method: 'POST' });
   state.usuario = null;
-  state.csrfToken = '';
   showLogin();
 }
 
@@ -116,7 +111,6 @@ async function api(url) {
 async function post(url, data) {
   const fd = new FormData();
   Object.keys(data).forEach(k => fd.append(k, data[k]));
-  fd.append('csrf_token', state.csrfToken);
   const res = await fetch(url, { method: 'POST', body: fd });
   return res.json();
 }

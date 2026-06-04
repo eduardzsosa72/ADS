@@ -4,7 +4,6 @@ require_once '../config/db.php';
 require_once '../config/auth.php';
 
 requireAdmin();
-verifyCsrf();
 
 $id = intval($_POST['id'] ?? 0);
 if (!$id) { echo json_encode(['error' => 'ID inválido']); exit; }
@@ -14,5 +13,5 @@ try {
     $conn->prepare("DELETE FROM citas WHERE id = ?")->execute([$id]);
     echo json_encode(['ok' => true]);
 } catch (Exception $e) {
-    echo json_encode(['error' => dbError($e)]);
+    echo json_encode(['error' => $e->getMessage()]);
 }
