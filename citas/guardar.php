@@ -4,6 +4,7 @@ require_once '../config/db.php';
 require_once '../config/auth.php';
 
 requireLogin();
+verifyCsrf();
 
 $id          = intval($_POST['id'] ?? 0);
 
@@ -45,5 +46,5 @@ try {
     echo json_encode(['ok' => true]);
 
 } catch (Exception $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['error' => dbError($e)]);
 }

@@ -2,6 +2,8 @@
 header('Content-Type: application/json');
 
 require_once '../config/db.php';
+require_once '../config/auth.php';
+requireLogin();
 $conn = getConn();
 
 $placa = strtoupper(trim($_GET['placa'] ?? ''));
@@ -41,8 +43,5 @@ try {
     ]);
 
 } catch (Exception $e) {
-    echo json_encode([
-        'error' => 'Error en consulta',
-        'detalle' => $e->getMessage()
-    ]);
+    echo json_encode(['error' => dbError($e)]);
 }

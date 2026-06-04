@@ -3,10 +3,8 @@ header('Content-Type: application/json');
 require_once '../config/db.php';
 require_once '../config/auth.php';
 
-if (($_SESSION['usuario']['rol'] ?? '') !== 'admin') {
-    echo json_encode(['error' => 'Sin permisos']);
-    exit;
-}
+requireAdmin();
+verifyCsrf();
 
 $id     = intval($_POST['id'] ?? 0);
 $estado = trim($_POST['estado'] ?? '');
@@ -23,9 +21,7 @@ $conn = getConn();
 try {
     $stmt = $conn->prepare("UPDATE ordenes SET estado = ? WHERE id = ?");
     $stmt->execute([$estado, $id]);
-
     echo json_encode(['ok' => true]);
-
 } catch (Exception $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['error' => dbError($e)]);
 }
